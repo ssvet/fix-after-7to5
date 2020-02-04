@@ -1,7 +1,5 @@
 {
     "name": "ssvet/fix-after-7to5",
     "description": "Fix line breaks after 7to5 converter",
-    "require": {
-        "php": "^5.3"
-    }
+    "license": "GPL-2.0-or-later"
 }
