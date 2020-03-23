@@ -61,6 +61,44 @@ function update_file( $file ) {
 	*/
 	$data2 = preg_replace( "![ \n\r\s]+// phpcs:ignore!m", ' // phpcs:ignore', $data2 );
 
+	/*
+	fix line breaks and tabs chars in sql create statements.
+	*/
+	$data2 = preg_replace_callback(
+		'!("CREATE TABLE)(.*?)(")!ms',
+		function( $matches ) {
+			return str_replace( [ '\n', '\t' ], [ "\n", "\t" ], $matches[0] );
+		},
+		$data2
+	);
+
+	// comment on same line or on the next.
+	$parts = explode( '/php5', $file, 2 );
+	if ( 2 === count( $parts ) ) {
+		$php7_file = $parts[0] . '/php7' . $parts[1];
+		if ( file_exists( $php7_file ) ) {
+			$content7 = file_get_contents( $php7_file );
+			$content7 = str_replace( [ '      ', '     ', '    ', '   ', '  ', ' ' ], [' ', ' ', ' ', ' ', ' ', ' ' ], $content7 );
+			$data2 = preg_replace_callback(
+				'!([\n][^\n]*?)[ \n\r\s\t]+(//[^\n]+)!ms',
+				function( $matches ) use ( $content7 ) {
+					$string = ltrim( $matches[1] ) . ' ' . rtrim( $matches[2] );
+					$string = str_replace( [ '      ', '     ', '    ', '   ', '  ', ' ' ], [' ', ' ', ' ', ' ', ' ', ' ' ], $string );
+					$string = str_replace( '   ', ' ', $string );
+					$string = str_replace( '  ', ' ', $string );
+					// if was at the same line at original - remove "\n", otherwise leave untouched.
+					$found = '' !== trim( $matches[1] ) && false !== strpos( $content7, $string );
+					return $found ? rtrim( $matches[1] ) . ' ' . $matches[2] : $matches[0];
+				},
+				$data2
+			);
+		}
+	}
+
+	if ( $data !== $data2 ) {
+		file_put_contents( $file, $data2 );
+		echo "Updated: $file\n";
+	}
 
 	if ( $data !== $data2 ) {
 		file_put_contents( $file, $data2 );
