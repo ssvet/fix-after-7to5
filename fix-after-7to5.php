@@ -56,6 +56,12 @@ function update_file( $file ) {
 	$data2 = preg_replace( "!=\"<\?php[ \n\r\s]*!m", '="<?php ', $data2 );
 	$data2 = preg_replace( "!\n\s*\?>\s*\"!m", ' ?>"', $data2 );
 
+	/*
+	"// phpcs:ignore" comment must be appended to previous string
+	*/
+	$data2 = preg_replace( "![ \n\r\s]+// phpcs:ignore!m", ' // phpcs:ignore', $data2 );
+
+
 	if ( $data !== $data2 ) {
 		file_put_contents( $file, $data2 );
 		echo "Updated: $file\n";
