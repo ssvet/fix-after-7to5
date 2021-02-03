@@ -94,6 +94,8 @@ function update_file( $file ) {
 			);
 		}
 	}
+	// remove parameter type \Throwable, as not defined in php5 workarounds.
+	$data2 = str_replace( '\\Throwable $e', '$e', $data2 );
 
 	if ( $data !== $data2 ) {
 		file_put_contents( $file, $data2 );
